@@ -1,13 +1,13 @@
 {
     "name": "workflow-plugin-cicd",
     "version": "0.1.0",
-    "description": "CI/CD pipeline steps: shell exec, Docker, artifact management, security scanning, git operations, AWS CodeBuild",
+    "description": "CI/CD pipeline steps: shell exec, Docker, artifact management, security scanning, git operations, AWS CodeBuild, deployment strategies",
     "author": "GoCodeAlone",
     "license": "MIT",
     "type": "external",
     "tier": "community",
     "minEngineVersion": "0.5.0",
-    "keywords": ["cicd", "git", "docker", "shell", "codebuild", "scanning", "artifacts"],
+    "keywords": ["cicd", "git", "docker", "shell", "codebuild", "scanning", "artifacts", "deployment", "rolling", "blue-green", "canary", "container"],
     "homepage": "https://github.com/GoCodeAlone/workflow-plugin-cicd",
     "repository": "https://github.com/GoCodeAlone/workflow-plugin-cicd",
     "capabilities": {
@@ -22,7 +22,10 @@
             "step.build_ui", "step.build_from_config", "step.build_binary",
             "step.git_clone", "step.git_commit", "step.git_push", "step.git_tag", "step.git_checkout",
             "step.codebuild_create_project", "step.codebuild_start", "step.codebuild_status",
-            "step.codebuild_logs", "step.codebuild_delete_project", "step.codebuild_list_builds"
+            "step.codebuild_logs", "step.codebuild_delete_project", "step.codebuild_list_builds",
+            "step.deploy", "step.deploy_rolling", "step.deploy_blue_green",
+            "step.deploy_canary", "step.deploy_verify", "step.deploy_rollback",
+            "step.container_build"
         ],
         "triggerTypes": []
     }

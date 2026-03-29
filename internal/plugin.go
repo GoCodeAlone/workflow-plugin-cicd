@@ -71,6 +71,14 @@ func (p *cicdPlugin) StepTypes() []string {
 		"step.codebuild_logs",
 		"step.codebuild_delete_project",
 		"step.codebuild_list_builds",
+		// Deployment steps (merged from workflow-plugin-deployment)
+		"step.deploy",
+		"step.deploy_rolling",
+		"step.deploy_blue_green",
+		"step.deploy_canary",
+		"step.deploy_verify",
+		"step.deploy_rollback",
+		"step.container_build",
 	}
 }
 
@@ -96,6 +104,14 @@ func (p *cicdPlugin) CreateStep(typeName, name string, config map[string]any) (s
 		"step.codebuild_create_project", "step.codebuild_start", "step.codebuild_status",
 		"step.codebuild_logs", "step.codebuild_delete_project", "step.codebuild_list_builds":
 		return &stubStep{name: name, stepType: typeName, config: config}, nil
+	case "step.deploy",
+		"step.deploy_rolling",
+		"step.deploy_blue_green",
+		"step.deploy_canary",
+		"step.deploy_verify",
+		"step.deploy_rollback",
+		"step.container_build":
+		return &deployStep{name: name, stepType: typeName, config: config}, nil
 	default:
 		return nil, fmt.Errorf("cicd plugin: unknown step type %q", typeName)
 	}
@@ -281,6 +297,40 @@ func (s *gitStep) Execute(
 	}
 
 	return &sdk.StepResult{Output: map[string]any{"ok": true}}, nil
+}
+
+// deployStep is a stub StepInstance for deployment step types.
+// TODO: Implement rolling, blue-green, canary strategies with health checking and rollback.
+type deployStep struct {
+	name     string
+	stepType string
+	config   map[string]any
+}
+
+func (s *deployStep) Execute(
+	_ context.Context,
+	_ map[string]any,
+	_ map[string]map[string]any,
+	_ map[string]any,
+	_ map[string]any,
+	_ map[string]any,
+) (*sdk.StepResult, error) {
+	service, _ := s.config["service"].(string)
+	image, _ := s.config["image"].(string)
+	strategy, _ := s.config["strategy"].(string)
+	if strategy == "" {
+		strategy = s.stepType
+	}
+
+	return &sdk.StepResult{
+		Output: map[string]any{
+			"status":   "deployed",
+			"service":  service,
+			"image":    image,
+			"strategy": strategy,
+			"message":  fmt.Sprintf("TODO: %s not yet implemented in external plugin", s.stepType),
+		},
+	}, nil
 }
 
 // stubStep is a stub for CI/CD steps not yet fully implemented.
