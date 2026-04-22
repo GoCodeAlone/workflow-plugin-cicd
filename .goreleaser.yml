@@ -3,6 +3,7 @@ project_name: workflow-plugin-cicd
 before:
   hooks:
     - go mod tidy
+    - "sed -i.bak 's/\"version\": \".*\"/\"version\": \"{{ .Version }}\"/' plugin.json && rm -f plugin.json.bak"
 builds:
   - id: workflow-plugin-cicd
     main: ./cmd/workflow-plugin-cicd

@@ -11,6 +11,12 @@ import (
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
 )
 
+// Version is set at build time via -ldflags
+// "-X github.com/GoCodeAlone/workflow-plugin-cicd/internal.Version=X.Y.Z".
+// Default is a bare semver so plugin loaders that validate semver accept
+// unreleased dev builds; goreleaser overrides with the real release tag.
+var Version = "0.0.0"
+
 // cicdPlugin implements sdk.PluginProvider.
 type cicdPlugin struct{}
 
@@ -23,7 +29,7 @@ func NewCICDPlugin() sdk.PluginProvider {
 func (p *cicdPlugin) Manifest() sdk.PluginManifest {
 	return sdk.PluginManifest{
 		Name:        "workflow-plugin-cicd",
-		Version:     "0.1.0",
+		Version:     Version,
 		Author:      "GoCodeAlone",
 		Description: "CI/CD pipeline steps: shell exec, Docker, artifact management, security scanning, git operations, AWS CodeBuild",
 	}
