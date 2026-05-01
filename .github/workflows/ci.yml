@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Configure Go private modules
+        run: git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Run tests
+        run: go test ./...
+        env:
+          GOWORK: "off"
+          GOPRIVATE: github.com/GoCodeAlone/*
+          GONOSUMCHECK: github.com/GoCodeAlone/*
+
+  wfctl-strict-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Configure Go private modules
+        run: git config --global url."https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Validate strict plugin contracts
+        run: |
+          if [ ! -f plugin.json ]; then
+            echo "plugin.json not found — strict contract validation cannot run" >&2
+            exit 1
+          fi
+          go run github.com/GoCodeAlone/workflow/cmd/wfctl@v0.20.1 plugin validate --file plugin.json --strict-contracts
+        env:
+          GOWORK: "off"
+          GOPRIVATE: github.com/GoCodeAlone/*
+          GONOSUMCHECK: github.com/GoCodeAlone/*
