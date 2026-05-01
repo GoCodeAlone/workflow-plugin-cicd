@@ -1,0 +1,404 @@
+{
+    "version": "1.0",
+    "plugin": "workflow-plugin-cicd",
+    "strict": true,
+    "modules": [
+        {
+            "type": "aws.codebuild",
+            "description": "AWS CodeBuild integration: manage projects, trigger builds, and poll build status.",
+            "configFields": [
+                {"key": "region", "type": "string", "description": "AWS region (e.g. us-east-1)", "required": false},
+                {"key": "role_arn", "type": "string", "description": "IAM role ARN to assume for CodeBuild API calls", "required": false},
+                {"key": "env_vars", "type": "map", "description": "Default environment variables injected into every build started by this module", "required": false}
+            ]
+        }
+    ],
+    "steps": [
+        {
+            "type": "step.shell_exec",
+            "configFields": [
+                {"key": "command", "type": "string", "required": true},
+                {"key": "shell", "type": "string", "required": false},
+                {"key": "workdir", "type": "string", "required": false},
+                {"key": "fail_on_error", "type": "boolean", "required": false}
+            ],
+            "outputs": [
+                {"key": "output", "type": "string"},
+                {"key": "exit_code", "type": "number"}
+            ]
+        },
+        {
+            "type": "step.artifact_pull",
+            "configFields": [
+                {"key": "artifact_id", "type": "string", "required": true},
+                {"key": "dest", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.artifact_push",
+            "configFields": [
+                {"key": "path", "type": "string", "required": true},
+                {"key": "name", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.docker_build",
+            "configFields": [
+                {"key": "context", "type": "string", "required": true},
+                {"key": "tag", "type": "string", "required": false},
+                {"key": "dockerfile", "type": "string", "required": false},
+                {"key": "build_args", "type": "map", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.docker_push",
+            "configFields": [
+                {"key": "image", "type": "string", "required": true},
+                {"key": "registry", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.docker_run",
+            "configFields": [
+                {"key": "image", "type": "string", "required": true},
+                {"key": "command", "type": "string", "required": false},
+                {"key": "env", "type": "map", "required": false},
+                {"key": "volumes", "type": "array", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.scan_sast",
+            "configFields": [
+                {"key": "target", "type": "string", "required": true},
+                {"key": "tool", "type": "string", "required": false},
+                {"key": "severity_threshold", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.scan_container",
+            "configFields": [
+                {"key": "image", "type": "string", "required": true},
+                {"key": "severity_threshold", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.scan_deps",
+            "configFields": [
+                {"key": "path", "type": "string", "required": true},
+                {"key": "tool", "type": "string", "required": false},
+                {"key": "severity_threshold", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.gate",
+            "configFields": [
+                {"key": "condition", "type": "string", "required": true},
+                {"key": "message", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.build_ui",
+            "configFields": [
+                {"key": "source", "type": "string", "required": true},
+                {"key": "dest", "type": "string", "required": false},
+                {"key": "command", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.build_from_config",
+            "configFields": [
+                {"key": "config_file", "type": "string", "required": true},
+                {"key": "target", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.build_binary",
+            "configFields": [
+                {"key": "source", "type": "string", "required": true},
+                {"key": "output", "type": "string", "required": false},
+                {"key": "flags", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.git_clone",
+            "configFields": [
+                {"key": "repo", "type": "string", "required": true},
+                {"key": "dest", "type": "string", "required": false},
+                {"key": "branch", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "cloned", "type": "boolean"},
+                {"key": "repo", "type": "string"},
+                {"key": "dest", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.git_commit",
+            "configFields": [
+                {"key": "workdir", "type": "string", "required": false},
+                {"key": "message", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "committed", "type": "boolean"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.git_push",
+            "configFields": [
+                {"key": "workdir", "type": "string", "required": false},
+                {"key": "remote", "type": "string", "required": false},
+                {"key": "branch", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "pushed", "type": "boolean"}
+            ]
+        },
+        {
+            "type": "step.git_tag",
+            "configFields": [
+                {"key": "tag", "type": "string", "required": true},
+                {"key": "workdir", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "tagged", "type": "boolean"},
+                {"key": "tag", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.git_checkout",
+            "configFields": [
+                {"key": "ref", "type": "string", "required": true},
+                {"key": "branch", "type": "string", "required": false},
+                {"key": "workdir", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "checked_out", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_create_project",
+            "configFields": [
+                {"key": "name", "type": "string", "required": true},
+                {"key": "source_type", "type": "string", "required": false},
+                {"key": "source_location", "type": "string", "required": false},
+                {"key": "buildspec", "type": "string", "required": false},
+                {"key": "environment_type", "type": "string", "required": false},
+                {"key": "compute_type", "type": "string", "required": false},
+                {"key": "image", "type": "string", "required": false},
+                {"key": "service_role", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_start",
+            "configFields": [
+                {"key": "project", "type": "string", "required": true},
+                {"key": "env_vars", "type": "map", "required": false},
+                {"key": "source_version", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_status",
+            "configFields": [
+                {"key": "build_id", "type": "string", "required": true}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_logs",
+            "configFields": [
+                {"key": "build_id", "type": "string", "required": true},
+                {"key": "tail_lines", "type": "number", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_delete_project",
+            "configFields": [
+                {"key": "name", "type": "string", "required": true}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.codebuild_list_builds",
+            "configFields": [
+                {"key": "project", "type": "string", "required": true},
+                {"key": "sort_order", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy",
+            "configFields": [
+                {"key": "service", "type": "string", "required": false},
+                {"key": "image", "type": "string", "required": false},
+                {"key": "strategy", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy_rolling",
+            "configFields": [
+                {"key": "service", "type": "string", "required": true},
+                {"key": "image", "type": "string", "required": false},
+                {"key": "max_unavailable", "type": "number", "required": false},
+                {"key": "max_surge", "type": "number", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy_blue_green",
+            "configFields": [
+                {"key": "service", "type": "string", "required": true},
+                {"key": "image", "type": "string", "required": false},
+                {"key": "health_check_path", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy_canary",
+            "configFields": [
+                {"key": "service", "type": "string", "required": true},
+                {"key": "image", "type": "string", "required": false},
+                {"key": "traffic_percent", "type": "number", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy_verify",
+            "configFields": [
+                {"key": "service", "type": "string", "required": true},
+                {"key": "health_check_path", "type": "string", "required": false},
+                {"key": "timeout", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.deploy_rollback",
+            "configFields": [
+                {"key": "service", "type": "string", "required": true},
+                {"key": "revision", "type": "string", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "service", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "strategy", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        },
+        {
+            "type": "step.container_build",
+            "configFields": [
+                {"key": "context", "type": "string", "required": true},
+                {"key": "tag", "type": "string", "required": false},
+                {"key": "dockerfile", "type": "string", "required": false},
+                {"key": "push", "type": "boolean", "required": false},
+                {"key": "build_args", "type": "map", "required": false}
+            ],
+            "outputs": [
+                {"key": "status", "type": "string"},
+                {"key": "image", "type": "string"},
+                {"key": "message", "type": "string"}
+            ]
+        }
+    ]
+}

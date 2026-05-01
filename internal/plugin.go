@@ -1,5 +1,9 @@
 // Package internal implements the workflow-plugin-cicd external plugin,
 // providing CI/CD pipeline step types and the aws.codebuild module type.
+// Each advertised module and step declares a typed schema contract that is
+// exposed via the SchemaProvider interface (gRPC) and as stepSchemas entries
+// in plugin.json, so that host-side tooling can validate payloads at
+// code-generation, compilation, or startup time rather than at runtime.
 package internal
 
 import (
@@ -32,6 +36,26 @@ func (p *cicdPlugin) Manifest() sdk.PluginManifest {
 		Version:     Version,
 		Author:      "GoCodeAlone",
 		Description: "CI/CD pipeline steps: shell exec, Docker, artifact management, security scanning, git operations, AWS CodeBuild",
+	}
+}
+
+// ModuleSchemas returns typed schema descriptors for each module type
+// this plugin provides. This implements sdk.SchemaProvider so that the
+// host engine can validate module config at startup and expose field
+// documentation via the editor / MCP server without running the plugin.
+func (p *cicdPlugin) ModuleSchemas() []sdk.ModuleSchemaData {
+	return []sdk.ModuleSchemaData{
+		{
+			Type:        "aws.codebuild",
+			Label:       "AWS CodeBuild",
+			Category:    "CI/CD",
+			Description: "AWS CodeBuild integration: manage projects, trigger builds, and poll build status using the AWS SDK.",
+			ConfigFields: []sdk.ConfigField{
+				{Name: "region", Type: "string", Description: "AWS region (e.g. us-east-1)", Required: false},
+				{Name: "role_arn", Type: "string", Description: "IAM role ARN to assume for CodeBuild API calls", Required: false},
+				{Name: "env_vars", Type: "map", Description: "Default environment variables injected into every build started by this module", Required: false},
+			},
+		},
 	}
 }
 
