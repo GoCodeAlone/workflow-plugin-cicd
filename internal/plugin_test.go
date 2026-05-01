@@ -227,11 +227,17 @@ func TestShellExecStep(t *testing.T) {
 	if result == nil {
 		t.Fatal("Execute returned nil result")
 	}
-	output, _ := result.Output["output"].(string)
+	output, ok := result.Output["output"].(string)
+	if !ok {
+		t.Fatalf("output type = %T, want string", result.Output["output"])
+	}
 	if output != "hello" {
 		t.Errorf("output = %q, want %q", output, "hello")
 	}
-	exitCode, _ := result.Output["exit_code"].(int)
+	exitCode, ok := result.Output["exit_code"].(int)
+	if !ok {
+		t.Fatalf("exit_code type = %T, want int", result.Output["exit_code"])
+	}
 	if exitCode != 0 {
 		t.Errorf("exit_code = %d, want 0", exitCode)
 	}
@@ -274,7 +280,10 @@ func TestShellExecStepFailOnError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Execute with fail_on_error=false should not error, got: %v", err)
 	}
-	exitCode, _ := result.Output["exit_code"].(int)
+	exitCode, ok := result.Output["exit_code"].(int)
+	if !ok {
+		t.Fatalf("exit_code type = %T, want int", result.Output["exit_code"])
+	}
 	if exitCode != 1 {
 		t.Errorf("exit_code = %d, want 1", exitCode)
 	}
