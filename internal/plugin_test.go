@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"sort"
 	"testing"
 
 	"github.com/GoCodeAlone/workflow-plugin-cicd/internal"
@@ -218,9 +217,7 @@ func TestShellExecStep(t *testing.T) {
 		t.Fatalf("CreateStep error: %v", err)
 	}
 
-	result, err := inst.Execute(context.Background(), nil, nil, nil, nil, map[string]any{
-		"command": "echo hello",
-	})
+	result, err := inst.Execute(context.Background(), nil, nil, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Execute error: %v", err)
 	}
@@ -254,7 +251,7 @@ func TestShellExecStepMissingCommand(t *testing.T) {
 		t.Fatalf("CreateStep error: %v", err)
 	}
 
-	_, err = inst.Execute(context.Background(), nil, nil, nil, nil, map[string]any{})
+	_, err = inst.Execute(context.Background(), nil, nil, nil, nil, nil)
 	if err == nil {
 		t.Error("Execute with missing command expected error, got nil")
 	}
@@ -273,10 +270,7 @@ func TestShellExecStepFailOnError(t *testing.T) {
 		t.Fatalf("CreateStep error: %v", err)
 	}
 
-	result, err := inst.Execute(context.Background(), nil, nil, nil, nil, map[string]any{
-		"command":       "exit 1",
-		"fail_on_error": false,
-	})
+	result, err := inst.Execute(context.Background(), nil, nil, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Execute with fail_on_error=false should not error, got: %v", err)
 	}
@@ -315,10 +309,7 @@ func TestDeploySteps(t *testing.T) {
 				t.Fatalf("CreateStep error: %v", err)
 			}
 
-			result, err := inst.Execute(context.Background(), nil, nil, nil, nil, map[string]any{
-				"service": "my-service",
-				"image":   "myimage:latest",
-			})
+			result, err := inst.Execute(context.Background(), nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatalf("Execute error: %v", err)
 			}
@@ -386,6 +377,11 @@ func TestPluginContractsJSON(t *testing.T) {
 		Steps []struct {
 			Type string `json:"type"`
 		} `json:"steps"`
+		Contracts []struct {
+			Kind string `json:"kind"`
+			Type string `json:"type"`
+			Mode string `json:"mode"`
+		} `json:"contracts"`
 	}
 	if err := json.Unmarshal(data, &contracts); err != nil {
 		t.Fatalf("parse plugin.contracts.json: %v", err)
@@ -422,6 +418,25 @@ func TestPluginContractsJSON(t *testing.T) {
 			t.Errorf("plugin.contracts.json missing step descriptor for %q", stepType)
 		}
 	}
+
+	// Verify contracts section: every module and step type must have a strict contract entry.
+	contractByType := make(map[string]string, len(contracts.Contracts)) // type -> mode
+	for _, c := range contracts.Contracts {
+		if c.Mode != "strict" {
+			t.Errorf("contract for %q has mode %q, want \"strict\"", c.Type, c.Mode)
+		}
+		contractByType[c.Type] = c.Mode
+	}
+	for _, modType := range mp.ModuleTypes() {
+		if _, found := contractByType[modType]; !found {
+			t.Errorf("plugin.contracts.json contracts section missing strict entry for module %q", modType)
+		}
+	}
+	for _, stepType := range sp.StepTypes() {
+		if _, found := contractByType[stepType]; !found {
+			t.Errorf("plugin.contracts.json contracts section missing strict entry for step %q", stepType)
+		}
+	}
 }
 
 // TestStepTypesConsistency verifies that the step types declared in plugin.json
@@ -444,9 +459,6 @@ func TestStepTypesConsistency(t *testing.T) {
 	p := internal.NewCICDPlugin()
 	sp := p.(sdk.StepProvider)
 	codeTypes := sp.StepTypes()
-
-	sort.Strings(manifest.Capabilities.StepTypes)
-	sort.Strings(codeTypes)
 
 	jsonSet := make(map[string]bool, len(manifest.Capabilities.StepTypes))
 	for _, t := range manifest.Capabilities.StepTypes {

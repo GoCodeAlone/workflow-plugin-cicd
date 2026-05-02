@@ -1002,7 +1002,15 @@
           "type": "string"
         },
         {
+          "key": "service",
+          "type": "string"
+        },
+        {
           "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
           "type": "string"
         },
         {

@@ -1362,9 +1362,19 @@
           "description": "Build operation result (deployed when handled by pipeline executor)"
         },
         {
+          "key": "service",
+          "type": "string",
+          "description": "Target service name"
+        },
+        {
           "key": "image",
           "type": "string",
           "description": "Built image reference"
+        },
+        {
+          "key": "strategy",
+          "type": "string",
+          "description": "Deployment strategy used"
         },
         {
           "key": "message",
