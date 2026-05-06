@@ -1,9 +1,9 @@
 // Package internal implements the workflow-plugin-cicd external plugin,
 // providing CI/CD pipeline step types and the aws.codebuild module type.
-// Each advertised module and step declares a typed schema contract that is
-// exposed via the SchemaProvider interface (gRPC) and as stepSchemas entries
-// in plugin.json, so that host-side tooling can validate payloads at
-// code-generation, compilation, or startup time rather than at runtime.
+// Module schemas are exposed via the SchemaProvider interface (gRPC) so the
+// host engine can validate module configuration at startup. Step schemas are
+// declared as stepSchemas entries in plugin.json so that tooling such as
+// wfctl can validate payloads at audit time without running the plugin binary.
 package internal
 
 import (

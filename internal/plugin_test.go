@@ -111,7 +111,10 @@ func TestSchemaProvider(t *testing.T) {
 	}
 
 	// Every module type returned by ModuleTypes must have a matching schema.
-	mp := p.(sdk.ModuleProvider)
+	mp, ok2 := p.(sdk.ModuleProvider)
+	if !ok2 {
+		t.Fatal("plugin does not implement sdk.ModuleProvider")
+	}
 	for _, modType := range mp.ModuleTypes() {
 		found := false
 		for _, s := range schemas {
@@ -208,7 +211,10 @@ func TestCreateStep(t *testing.T) {
 // returns combined output and exit code.
 func TestShellExecStep(t *testing.T) {
 	p := internal.NewCICDPlugin()
-	sp := p.(sdk.StepProvider)
+	sp, ok := p.(sdk.StepProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 
 	inst, err := sp.CreateStep("step.shell_exec", "test-shell", map[string]any{
 		"command": "echo hello",
@@ -233,7 +239,12 @@ func TestShellExecStep(t *testing.T) {
 	}
 	exitCode, ok := result.Output["exit_code"].(int)
 	if !ok {
-		t.Fatalf("exit_code type = %T, want int", result.Output["exit_code"])
+		// Some SDK serializations (e.g. JSON/protobuf structpb) return float64 for numbers.
+		if f, ok2 := result.Output["exit_code"].(float64); ok2 {
+			exitCode = int(f)
+		} else {
+			t.Fatalf("exit_code type = %T, want int or float64", result.Output["exit_code"])
+		}
 	}
 	if exitCode != 0 {
 		t.Errorf("exit_code = %d, want 0", exitCode)
@@ -244,7 +255,10 @@ func TestShellExecStep(t *testing.T) {
 // when the required 'command' config field is absent.
 func TestShellExecStepMissingCommand(t *testing.T) {
 	p := internal.NewCICDPlugin()
-	sp := p.(sdk.StepProvider)
+	sp, ok := p.(sdk.StepProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 
 	inst, err := sp.CreateStep("step.shell_exec", "test-shell", map[string]any{})
 	if err != nil {
@@ -260,7 +274,10 @@ func TestShellExecStepMissingCommand(t *testing.T) {
 // TestShellExecStepFailOnError verifies that shell_exec respects fail_on_error=false.
 func TestShellExecStepFailOnError(t *testing.T) {
 	p := internal.NewCICDPlugin()
-	sp := p.(sdk.StepProvider)
+	sp, ok := p.(sdk.StepProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 
 	inst, err := sp.CreateStep("step.shell_exec", "test-shell", map[string]any{
 		"command":       "exit 1",
@@ -276,7 +293,12 @@ func TestShellExecStepFailOnError(t *testing.T) {
 	}
 	exitCode, ok := result.Output["exit_code"].(int)
 	if !ok {
-		t.Fatalf("exit_code type = %T, want int", result.Output["exit_code"])
+		// Some SDK serializations (e.g. JSON/protobuf structpb) return float64 for numbers.
+		if f, ok2 := result.Output["exit_code"].(float64); ok2 {
+			exitCode = int(f)
+		} else {
+			t.Fatalf("exit_code type = %T, want int or float64", result.Output["exit_code"])
+		}
 	}
 	if exitCode != 1 {
 		t.Errorf("exit_code = %d, want 1", exitCode)
@@ -297,7 +319,10 @@ func TestDeploySteps(t *testing.T) {
 	}
 
 	p := internal.NewCICDPlugin()
-	sp := p.(sdk.StepProvider)
+	sp, ok := p.(sdk.StepProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 
 	for _, stepType := range deployTypes {
 		t.Run(stepType, func(t *testing.T) {
@@ -316,8 +341,12 @@ func TestDeploySteps(t *testing.T) {
 			if result == nil {
 				t.Fatal("Execute returned nil result")
 			}
-			if _, ok := result.Output["status"]; !ok {
-				t.Error("output missing 'status' key")
+			// All deploy steps (including container_build) use deployStep which
+			// always emits all five output keys per the strict contract schema.
+			for _, key := range []string{"status", "service", "image", "strategy", "message"} {
+				if _, ok := result.Output[key]; !ok {
+					t.Errorf("output missing %q key", key)
+				}
 			}
 		})
 	}
@@ -396,7 +425,10 @@ func TestPluginContractsJSON(t *testing.T) {
 
 	// Verify modules coverage.
 	p := internal.NewCICDPlugin()
-	mp := p.(sdk.ModuleProvider)
+	mp, ok2 := p.(sdk.ModuleProvider)
+	if !ok2 {
+		t.Fatal("plugin does not implement sdk.ModuleProvider")
+	}
 	moduleSet := make(map[string]bool, len(contracts.Modules))
 	for _, m := range contracts.Modules {
 		moduleSet[m.Type] = true
@@ -408,7 +440,10 @@ func TestPluginContractsJSON(t *testing.T) {
 	}
 
 	// Verify steps coverage.
-	sp := p.(sdk.StepProvider)
+	sp, ok3 := p.(sdk.StepProvider)
+	if !ok3 {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 	stepSet := make(map[string]bool, len(contracts.Steps))
 	for _, s := range contracts.Steps {
 		stepSet[s.Type] = true
@@ -457,7 +492,10 @@ func TestStepTypesConsistency(t *testing.T) {
 	}
 
 	p := internal.NewCICDPlugin()
-	sp := p.(sdk.StepProvider)
+	sp, ok := p.(sdk.StepProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.StepProvider")
+	}
 	codeTypes := sp.StepTypes()
 
 	jsonSet := make(map[string]bool, len(manifest.Capabilities.StepTypes))

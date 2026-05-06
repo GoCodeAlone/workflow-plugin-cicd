@@ -707,19 +707,19 @@
     {
       "type": "step.git_checkout",
       "plugin": "workflow-plugin-cicd",
-      "description": "Checks out a Git branch, tag, or commit reference.",
+      "description": "Checks out a Git branch, tag, or commit reference. Provide either ref or branch.",
       "configFields": [
         {
           "key": "ref",
           "label": "Ref",
           "type": "string",
-          "description": "Git ref (branch, tag, or commit SHA) to check out; either ref or branch is required"
+          "description": "Git ref (branch, tag, or commit SHA) to check out; provide this or 'branch'"
         },
         {
           "key": "branch",
           "label": "Branch",
           "type": "string",
-          "description": "Alias for ref; used when ref is absent"
+          "description": "Branch name to check out; alternative to ref"
         },
         {
           "key": "workdir",
