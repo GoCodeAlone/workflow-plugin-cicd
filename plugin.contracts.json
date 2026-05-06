@@ -1,0 +1,1279 @@
+{
+  "version": "1.0",
+  "plugin": "workflow-plugin-cicd",
+  "strict": true,
+  "modules": [
+    {
+      "type": "aws.codebuild",
+      "description": "AWS CodeBuild integration: manage projects, trigger builds, and poll build status.",
+      "configFields": [
+        {
+          "key": "region",
+          "type": "string",
+          "description": "AWS region (e.g. us-east-1)",
+          "required": false
+        },
+        {
+          "key": "role_arn",
+          "type": "string",
+          "description": "IAM role ARN to assume for CodeBuild API calls",
+          "required": false
+        },
+        {
+          "key": "env_vars",
+          "type": "map",
+          "description": "Default environment variables injected into every build started by this module",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "type": "step.shell_exec",
+      "configFields": [
+        {
+          "key": "command",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "shell",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "workdir",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "fail_on_error",
+          "type": "boolean",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "output",
+          "type": "string"
+        },
+        {
+          "key": "exit_code",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "type": "step.artifact_pull",
+      "configFields": [
+        {
+          "key": "artifact_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "dest",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.artifact_push",
+      "configFields": [
+        {
+          "key": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.docker_build",
+      "configFields": [
+        {
+          "key": "context",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "tag",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "dockerfile",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "build_args",
+          "type": "map",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.docker_push",
+      "configFields": [
+        {
+          "key": "image",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "registry",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.docker_run",
+      "configFields": [
+        {
+          "key": "image",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "command",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "env",
+          "type": "map",
+          "required": false
+        },
+        {
+          "key": "volumes",
+          "type": "array",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.scan_sast",
+      "configFields": [
+        {
+          "key": "target",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "tool",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "severity_threshold",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.scan_container",
+      "configFields": [
+        {
+          "key": "image",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "severity_threshold",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.scan_deps",
+      "configFields": [
+        {
+          "key": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "tool",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "severity_threshold",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.gate",
+      "configFields": [
+        {
+          "key": "condition",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "message",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.build_ui",
+      "configFields": [
+        {
+          "key": "source",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "dest",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "command",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.build_from_config",
+      "configFields": [
+        {
+          "key": "config_file",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "target",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.build_binary",
+      "configFields": [
+        {
+          "key": "source",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "output",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "flags",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.git_clone",
+      "configFields": [
+        {
+          "key": "repo",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "dest",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "branch",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "cloned",
+          "type": "boolean"
+        },
+        {
+          "key": "repo",
+          "type": "string"
+        },
+        {
+          "key": "dest",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.git_commit",
+      "configFields": [
+        {
+          "key": "workdir",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "message",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "committed",
+          "type": "boolean"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.git_push",
+      "configFields": [
+        {
+          "key": "workdir",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "remote",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "branch",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "pushed",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "type": "step.git_tag",
+      "configFields": [
+        {
+          "key": "tag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "workdir",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "tagged",
+          "type": "boolean"
+        },
+        {
+          "key": "tag",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.git_checkout",
+      "configFields": [
+        {
+          "key": "ref",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "branch",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "workdir",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "checked_out",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_create_project",
+      "configFields": [
+        {
+          "key": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "source_type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "source_location",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "buildspec",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "environment_type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "compute_type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "service_role",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_start",
+      "configFields": [
+        {
+          "key": "project",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "env_vars",
+          "type": "map",
+          "required": false
+        },
+        {
+          "key": "source_version",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_status",
+      "configFields": [
+        {
+          "key": "build_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_logs",
+      "configFields": [
+        {
+          "key": "build_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "tail_lines",
+          "type": "number",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_delete_project",
+      "configFields": [
+        {
+          "key": "name",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.codebuild_list_builds",
+      "configFields": [
+        {
+          "key": "project",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "sort_order",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "strategy",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy_rolling",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "max_unavailable",
+          "type": "number",
+          "required": false
+        },
+        {
+          "key": "max_surge",
+          "type": "number",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy_blue_green",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "health_check_path",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy_canary",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "image",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "traffic_percent",
+          "type": "number",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy_verify",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "health_check_path",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "timeout",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.deploy_rollback",
+      "configFields": [
+        {
+          "key": "service",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "revision",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "type": "step.container_build",
+      "configFields": [
+        {
+          "key": "context",
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "tag",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "dockerfile",
+          "type": "string",
+          "required": false
+        },
+        {
+          "key": "push",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "key": "build_args",
+          "type": "map",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "status",
+          "type": "string"
+        },
+        {
+          "key": "service",
+          "type": "string"
+        },
+        {
+          "key": "image",
+          "type": "string"
+        },
+        {
+          "key": "strategy",
+          "type": "string"
+        },
+        {
+          "key": "message",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "kind": "module",
+      "type": "aws.codebuild",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.AwsCodebuildConfig"
+    },
+    {
+      "kind": "step",
+      "type": "step.shell_exec",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ShellExecConfig",
+      "input": "workflow.plugins.cicd.v1.ShellExecInput",
+      "output": "workflow.plugins.cicd.v1.ShellExecOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.artifact_pull",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ArtifactPullConfig",
+      "input": "workflow.plugins.cicd.v1.ArtifactPullInput",
+      "output": "workflow.plugins.cicd.v1.ArtifactPullOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.artifact_push",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ArtifactPushConfig",
+      "input": "workflow.plugins.cicd.v1.ArtifactPushInput",
+      "output": "workflow.plugins.cicd.v1.ArtifactPushOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.docker_build",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DockerBuildConfig",
+      "input": "workflow.plugins.cicd.v1.DockerBuildInput",
+      "output": "workflow.plugins.cicd.v1.DockerBuildOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.docker_push",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DockerPushConfig",
+      "input": "workflow.plugins.cicd.v1.DockerPushInput",
+      "output": "workflow.plugins.cicd.v1.DockerPushOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.docker_run",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DockerRunConfig",
+      "input": "workflow.plugins.cicd.v1.DockerRunInput",
+      "output": "workflow.plugins.cicd.v1.DockerRunOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.scan_sast",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ScanSastConfig",
+      "input": "workflow.plugins.cicd.v1.ScanSastInput",
+      "output": "workflow.plugins.cicd.v1.ScanSastOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.scan_container",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ScanContainerConfig",
+      "input": "workflow.plugins.cicd.v1.ScanContainerInput",
+      "output": "workflow.plugins.cicd.v1.ScanContainerOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.scan_deps",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ScanDepsConfig",
+      "input": "workflow.plugins.cicd.v1.ScanDepsInput",
+      "output": "workflow.plugins.cicd.v1.ScanDepsOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.gate",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GateConfig",
+      "input": "workflow.plugins.cicd.v1.GateInput",
+      "output": "workflow.plugins.cicd.v1.GateOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.build_ui",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.BuildUiConfig",
+      "input": "workflow.plugins.cicd.v1.BuildUiInput",
+      "output": "workflow.plugins.cicd.v1.BuildUiOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.build_from_config",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.BuildFromConfigConfig",
+      "input": "workflow.plugins.cicd.v1.BuildFromConfigInput",
+      "output": "workflow.plugins.cicd.v1.BuildFromConfigOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.build_binary",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.BuildBinaryConfig",
+      "input": "workflow.plugins.cicd.v1.BuildBinaryInput",
+      "output": "workflow.plugins.cicd.v1.BuildBinaryOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.git_clone",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GitCloneConfig",
+      "input": "workflow.plugins.cicd.v1.GitCloneInput",
+      "output": "workflow.plugins.cicd.v1.GitCloneOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.git_commit",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GitCommitConfig",
+      "input": "workflow.plugins.cicd.v1.GitCommitInput",
+      "output": "workflow.plugins.cicd.v1.GitCommitOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.git_push",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GitPushConfig",
+      "input": "workflow.plugins.cicd.v1.GitPushInput",
+      "output": "workflow.plugins.cicd.v1.GitPushOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.git_tag",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GitTagConfig",
+      "input": "workflow.plugins.cicd.v1.GitTagInput",
+      "output": "workflow.plugins.cicd.v1.GitTagOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.git_checkout",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.GitCheckoutConfig",
+      "input": "workflow.plugins.cicd.v1.GitCheckoutInput",
+      "output": "workflow.plugins.cicd.v1.GitCheckoutOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_create_project",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildCreateProjectConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildCreateProjectInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildCreateProjectOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_start",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildStartConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildStartInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildStartOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_status",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildStatusConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildStatusInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildStatusOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_logs",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildLogsConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildLogsInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildLogsOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_delete_project",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildDeleteProjectConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildDeleteProjectInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildDeleteProjectOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.codebuild_list_builds",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.CodebuildListBuildsConfig",
+      "input": "workflow.plugins.cicd.v1.CodebuildListBuildsInput",
+      "output": "workflow.plugins.cicd.v1.CodebuildListBuildsOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployConfig",
+      "input": "workflow.plugins.cicd.v1.DeployInput",
+      "output": "workflow.plugins.cicd.v1.DeployOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy_rolling",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployRollingConfig",
+      "input": "workflow.plugins.cicd.v1.DeployRollingInput",
+      "output": "workflow.plugins.cicd.v1.DeployRollingOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy_blue_green",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployBlueGreenConfig",
+      "input": "workflow.plugins.cicd.v1.DeployBlueGreenInput",
+      "output": "workflow.plugins.cicd.v1.DeployBlueGreenOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy_canary",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployCanaryConfig",
+      "input": "workflow.plugins.cicd.v1.DeployCanaryInput",
+      "output": "workflow.plugins.cicd.v1.DeployCanaryOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy_verify",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployVerifyConfig",
+      "input": "workflow.plugins.cicd.v1.DeployVerifyInput",
+      "output": "workflow.plugins.cicd.v1.DeployVerifyOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.deploy_rollback",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.DeployRollbackConfig",
+      "input": "workflow.plugins.cicd.v1.DeployRollbackInput",
+      "output": "workflow.plugins.cicd.v1.DeployRollbackOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.container_build",
+      "mode": "strict",
+      "config": "workflow.plugins.cicd.v1.ContainerBuildConfig",
+      "input": "workflow.plugins.cicd.v1.ContainerBuildInput",
+      "output": "workflow.plugins.cicd.v1.ContainerBuildOutput"
+    }
+  ]
+}
