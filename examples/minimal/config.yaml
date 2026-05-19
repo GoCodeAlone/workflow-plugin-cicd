@@ -1,0 +1,13 @@
+# Minimal config exercising workflow-plugin-cicd.
+# Schema-validate with: wfctl validate --skip-unknown-types examples/minimal/config.yaml
+version: 1
+modules:
+  - name: cicd-provider
+    type: aws.codebuild
+    config: {}
+workflows:
+  pipeline:
+    steps:
+      - name: example
+        type: step.shell_exec
+        config: {}
