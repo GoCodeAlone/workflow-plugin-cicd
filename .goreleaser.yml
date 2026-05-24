@@ -11,6 +11,8 @@ builds:
     env:
       - CGO_ENABLED=0
       - GOPRIVATE=github.com/GoCodeAlone/*
+    ldflags:
+      - "-s -w -X github.com/GoCodeAlone/workflow-plugin-cicd/internal.Version={{.Version}}"
     goos:
       - linux
       - darwin
