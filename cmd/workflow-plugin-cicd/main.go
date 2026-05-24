@@ -9,5 +9,5 @@ import (
 )
 
 func main() {
-	sdk.Serve(internal.NewCICDPlugin())
+	sdk.Serve(internal.NewCICDPlugin(), sdk.WithBuildVersion(sdk.ResolveBuildVersion(internal.Version)))
 }
