@@ -1,6 +1,6 @@
 {
     "name": "workflow-plugin-cicd",
-    "version": "0.1.1",
+    "version": "0.0.0",
     "description": "CI/CD pipeline steps: shell exec, Docker, artifact management, security scanning, git operations, AWS CodeBuild, deployment strategies",
     "author": "GoCodeAlone",
     "license": "MIT",
